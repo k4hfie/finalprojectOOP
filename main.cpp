@@ -10,6 +10,8 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #define K 75
 #define RATE(x) (x * 100)
@@ -65,7 +67,7 @@ public:
     }
 
     void showCart(){
-        std::cout << "\t\tSERVICE CART\n";
+        std::cout << "\t\t    CART\n";
         std::cout << "---------------------------------------------\n";
         std::cout << "Type \t\t| Weight \t| Cost\n";
         for (const auto& item : cart){
@@ -77,31 +79,59 @@ public:
         std::cout << "\t    TOTAL\t\t| " << calculateTotalCost() << " IDR\n";
         std::cout << "---------------------------------------------\n";
     }
+
+    void processTransaction() {
+        std::cout << "> total cost: " << calculateTotalCost() << " IDR\n";
+        std::cout << "> processing transaction...\n";
+        
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "> ...\n";
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "> ...\n";
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "> ...\n";
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        
+        std::cout << "> transaction successful!\n";
+        std::cout << "> cart has been cleared\n";
+        cart.clear();
+    }
 };
 
 int readInt(const std::string& prompt){
-    int num = std::stoi(prompt);
-    if (num < 0){
+    int value = std::stoi(prompt);
+    if (value < 0){
         std::cout << "> error: weight must be positive\n";
         return 0;
     }
     
-    else if (num > MAX(K)){
+    else if (value > MAX(K)){
         std::cout << "> error: weight must be 1 to " << MAX(K) << " kg\n";
         return 0;
     }
 
     else
-        return num;
+        return value;
 }
 
-void showMenu(){
+
+void showMainMenu(){
     std::cout << "\t\tLAUNDRY MENU\n";
+    std::cout << "---------------------------------------------\n";
+    std::cout << "1. Add Item\n";
+    std::cout << "2. List All item\n";
+    std::cout << "3. Process Transaction\n";
+    std::cout << "4. Exit\n";
+    std::cout << "---------------------------------------------\n";
+    std::cout << "> ";
+}
+
+void showServiceMenu(){
+    std::cout << "\t\tSERVICE MENU\n";
     std::cout << "---------------------------------------------\n";
     std::cout << "1. Wash Only\n";
     std::cout << "2. Wash & Iron\n";
-    std::cout << "3. Show Cart\n";
-    std::cout << "4. Exit\n";
+    std::cout << "3. Return to Main menu\n";
     std::cout << "---------------------------------------------\n";
     std::cout << "> ";
 }
@@ -121,41 +151,55 @@ int main(void) {
     
     while(1){
         std::string prompt; 
-        int choice;
+        int choice; int choice2;
 
-        showMenu();
+        showMainMenu();
         std::cin >> choice;
         switch(choice){
             case 1:
-                std::cout << "> enter amount of kg: ";
-                std::cin >> prompt;
+                showServiceMenu();
+                std::cin >> choice2;
+                switch(choice2){
+                    case 1:
+                        std::cout << "> enter amount of kg: ";
+                        std::cin >> prompt;
 
-                if (!readInt(prompt))
-                    break;
+                        if (!readInt(prompt))
+                            break;
 
-                else {
-                    int units = readInt(prompt);
-                    manager.add(std::make_unique<WashOnly>("Wash Only", units));
-                }
+                        else {
+                            int units = readInt(prompt);
+                            manager.add(std::make_unique<WashOnly>("Wash Only", units));
+                        }
 
-                break;
+                        break;
+                                
+                    case 2:
+                        std::cout << "> enter amount of kg: ";
+                        std::cin >> prompt;
+
+                        if(!readInt(prompt))
+                            break;
                         
-            case 2:
-                std::cout << "> enter amount of kg: ";
-                std::cin >> prompt;
+                        else {
+                            int units = readInt(prompt);
+                            manager.add(std::make_unique<WashAndIron>("Wash & Iron", units)); 
+                        }
 
-                if(!readInt(prompt))
-                    break;
-                
-                else {
-                    int units = readInt(prompt);
-                    manager.add(std::make_unique<WashAndIron>("Wash & Iron", units)); 
+                        break;
+
+                    case 3:
+                        break;
                 }
+                
+                break;
 
+            case 2:
+                manager.showCart();
                 break;
 
             case 3:
-                manager.showCart();
+                manager.processTransaction();
                 break;
 
             case 4:
